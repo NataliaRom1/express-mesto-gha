@@ -50,7 +50,7 @@ const getUsers = async (req, res) => {
 
 // Возвращает пользователя по _id
 const getUserById = (req, res) => {
-  User.findById(req.params.userId)
+  User.findById(req.params.userId, { new: true, runValidators: true })
     .orFail(() => new Error('Not found')) // Мы попадаем сюда, когда ничего не найдено
     .then((user) => res.status(STATUS_OK).send(user))
     .catch((err) => {
@@ -60,7 +60,7 @@ const getUserById = (req, res) => {
           .send({
             message: 'User not found',
           });
-      } else if (err.message.includes('validation failed')) {
+      } else if (err.name === 'CastError') {
         res
           .status(ERROR_BAD_REQUEST)
           .send({

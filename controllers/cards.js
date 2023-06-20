@@ -81,19 +81,16 @@ const addCardLike = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .then((card) => {
-      if (!card) {
+    .orFail(() => new Error('Not found'))
+    .then((card) => res.status(STATUS_OK).send(card))
+    .catch((err) => {
+      if (err.message === 'Not found') {
         res
           .status(ERROR_NOT_FOUND)
           .send({
             message: 'Card not found',
           });
-      } else {
-        res.status(STATUS_OK).send(card);
-      }
-    })
-    .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      } else if (err.name === 'CastError') {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
@@ -118,19 +115,16 @@ const deleteCardLike = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .then((card) => {
-      if (!card) {
+    .orFail(() => new Error('Not found'))
+    .then((card) => res.status(STATUS_OK).send(card))
+    .catch((err) => {
+      if (err.message === 'Not found') {
         res
           .status(ERROR_NOT_FOUND)
           .send({
             message: 'Card not found',
           });
-      } else {
-        res.status(STATUS_OK).send(card);
-      }
-    })
-    .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      } else if (err.name === 'CastError') {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
@@ -140,7 +134,7 @@ const deleteCardLike = (req, res) => {
         res
           .status(ERROR_INTERNAL_SERVER)
           .send({
-            message: 'Internal Server Error',
+            message: 'Internal server error',
             err: err.message,
             stack: err.stack,
           });
