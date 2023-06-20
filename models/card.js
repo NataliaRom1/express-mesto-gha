@@ -22,6 +22,7 @@ const cardSchema = new mongoose.Schema({
   likes: [// Cписок лайкнувших пост пользователей
     {
       type: mongoose.Schema.Types.ObjectId,
+      ref: 'user',
       default: [],
     },
   ],
