@@ -81,21 +81,17 @@ const addCardLike = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .then
-    (
-      (card) => {
-      // if (!card) {
-      //   res
-      //     .status(ERROR_NOT_FOUND)
-      //     .send({
-      //       message: 'Card not found',
-      //     }
-      // );
-      // } else {
+    .then((card) => {
+      if (!card) {
+        res
+          .status(ERROR_NOT_FOUND)
+          .send({
+            message: 'Card not found',
+          });
+      } else {
         res.status(STATUS_OK).send(card);
       }
-    // }
-    )
+    })
     .catch((err) => {
       if (err.message.includes('validation failed')) {
         res
@@ -134,7 +130,7 @@ const deleteCardLike = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.message.includes('Validation failed')) {
+      if (err.message.includes('validation failed')) {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
