@@ -50,7 +50,7 @@ const getUsers = async (req, res) => {
 
 // Возвращает пользователя по _id
 const getUserById = (req, res) => {
-  User.findById(req.params.userId, { runValidators: true })
+  User.findById(req.params.userId)
     .orFail(() => new Error('Not found')) // Мы попадаем сюда, когда ничего не найдено
     .then((user) => res.status(STATUS_OK).send(user))
     .catch((err) => {
