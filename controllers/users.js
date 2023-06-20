@@ -60,11 +60,11 @@ const getUserById = (req, res) => {
           .send({
             message: 'User not found',
           });
-      } else if (err.name = 'CastError') {
+      } else if (err.message.includes('validation failed')) {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
