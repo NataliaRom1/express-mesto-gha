@@ -60,6 +60,12 @@ const getUserById = (req, res) => {
           .send({
             message: 'User not found',
           });
+      } else if (err.name = 'CastError') {
+        res
+          .status(ERROR_BAD_REQUEST)
+          .send({
+            message: 'Data is incorrect'
+          });
       } else {
         res
           .status(ERROR_INTERNAL_SERVER)
