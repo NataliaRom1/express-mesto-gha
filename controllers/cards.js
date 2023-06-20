@@ -44,21 +44,18 @@ const createCard = (req, res) => {
 // Удаляет карточку по идентификатору
 const deleteCardById = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then((card) => {
-      if (!card) {
+    .orFail(() => new Error('Not found'))
+    .then((card) => res.status(STATUS_OK).send(card))
+    .catch((err) => {
+      if (err.message === 'Not found') {
         res
           .status(ERROR_NOT_FOUND)
           .send({
             message: 'Card not found',
           });
-      } else {
-        res.status(STATUS_OK).send(card);
-      }
-    })
-    .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      } else if (err.name === 'CastError') {
         res
-          .status(400)
+          .status(ERROR_BAD_REQUEST)
           .send({
             message: 'Data is incorrect',
           });
