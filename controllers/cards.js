@@ -79,18 +79,18 @@ const addCardLike = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true },
+    { new: true }
   )
     .orFail(() => new Error('Not found'))
     .then((card) => res.status(STATUS_OK).send(card))
     .catch((err) => {
-      if (err.message === 'Not found') {
+      if (err.message == 'Not found') {
         res
           .status(ERROR_NOT_FOUND)
           .send({
             message: 'Card not found',
           });
-      } else if (err.name === 'CastError') {
+      } else if (err.name == 'CastError') {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
