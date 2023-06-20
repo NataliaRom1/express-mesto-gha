@@ -9,7 +9,7 @@ const getUsers = async (req, res) => {
     const users = await User.find({}); // Будет ждать ответ, только потом перейдет дальше
     res.status(STATUS_OK).send(users);
   } catch (err) {
-    if (err.message.includes('Validation failed')) {
+    if (err.message.includes('validation failed')) {
       res
         .status(ERROR_BAD_REQUEST)
         .send({
