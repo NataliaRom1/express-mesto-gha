@@ -1,4 +1,4 @@
-const User = require('../models/user'); //Экспорт модели юзера
+const User = require('../models/user'); // Экспорт модели юзера
 const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('../utils/errors');
 const { STATUS_OK, STATUS_CREATED } = require('../utils/status');
 
@@ -6,14 +6,14 @@ const { STATUS_OK, STATUS_CREATED } = require('../utils/status');
 const getUsers = async (req, res) => {
   // Пытается сделать try, если не получилось - проваливается в catch
   try {
-    const users = await User.find({}); //Будет ждать ответ, только потом перейдет дальше
+    const users = await User.find({}); // Будет ждать ответ, только потом перейдет дальше
     res.status(STATUS_OK).send(users);
   } catch (err) {
     if (err.message.includes('Validation failed')) {
       res
         .status(ERROR_BAD_REQUEST)
         .send({
-          message: 'Data is incorrect'
+          message: 'Data is incorrect',
         });
     } else {
       res
@@ -25,10 +25,11 @@ const getUsers = async (req, res) => {
         });
     }
   }
-}
+};
 
 // getUsers - это контролер
-// res, req, next*, error* - параметры (если есть next - это мидлвара, если error - errorHandler или error мидлвара)
+// res, req, next*, error* - параметры (если есть next - это мидлвара, если error - errorHandler
+// или error мидлвара)
 // const getUsers = (req, res) => {
 //   // req - все из объекта запроса
 //   // res - все из ответа(обычно методы)
@@ -50,39 +51,40 @@ const getUsers = async (req, res) => {
 // Возвращает пользователя по _id
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(() => new Error('Not found')) //мы попадаем сюда, когда ничего не найдено
+    .orFail(() => new Error('Not found')) // Мы попадаем сюда, когда ничего не найдено
     .then((user) => res.status(STATUS_OK).send(user))
     .catch((err) => {
       if (err.message === 'Not found') {
         res
           .status(ERROR_NOT_FOUND)
           .send({
-            message: 'User not found'
-          })
+            message: 'User not found',
+          });
       } else {
         res
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal server error',
             err: err.message,
-            stack: err.stack
-          })
+            stack: err.stack,
+          });
       }
     });
-}
+};
 
 // Создаёт пользователя
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.status(STATUS_CREATED).send(user)) //При успешном создании нового чего-то принято использовать статус 201
+    // При успешном создании нового чего-то принято использовать статус 201
+    .then((user) => res.status(STATUS_CREATED).send(user))
     .catch((err) => {
       if (err.message.includes('Validation failed')) {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
@@ -93,8 +95,8 @@ const createUser = (req, res) => {
             stack: err.stack,
           });
       }
-    })
-}
+    });
+};
 
 // Обновляет профиль
 const updateProfile = (req, res) => {
@@ -106,11 +108,10 @@ const updateProfile = (req, res) => {
         res
           .status(ERROR_NOT_FOUND)
           .send({
-            message: 'User not found'
-          })
-
+            message: 'User not found',
+          });
       } else {
-        res.status(STATUS_OK).send(user)
+        res.status(STATUS_OK).send(user);
       }
     })
     .catch((err) => {
@@ -118,7 +119,7 @@ const updateProfile = (req, res) => {
         res
           .status(400)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
@@ -129,8 +130,8 @@ const updateProfile = (req, res) => {
             stack: err.stack,
           });
       }
-    })
-}
+    });
+};
 
 // Обновляет аватар
 const updateAvatar = (req, res) => {
@@ -142,11 +143,10 @@ const updateAvatar = (req, res) => {
         res
           .status(ERROR_NOT_FOUND)
           .send({
-            message: 'User not found'
-          })
-
+            message: 'User not found',
+          });
       } else {
-        res.status(STATUS_OK).send(user)
+        res.status(STATUS_OK).send(user);
       }
     })
     .catch((err) => {
@@ -154,7 +154,7 @@ const updateAvatar = (req, res) => {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
@@ -165,8 +165,8 @@ const updateAvatar = (req, res) => {
             stack: err.stack,
           });
       }
-    })
-}
+    });
+};
 
 module.exports = {
   getUsers,

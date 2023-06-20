@@ -18,15 +18,15 @@ const cardSchema = new mongoose.Schema({
     required: true,
   },
 
-  likes: { //список лайкнувших пост пользователей
+  likes: { // Cписок лайкнувших пост пользователей
     type: [mongoose.Schema.Types.ObjectId],
     default: [],
   },
 
-  createdAt: { //дата создания
+  createdAt: { // Дата создания
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
 module.exports = mongoose.model('card', cardSchema);

@@ -1,4 +1,4 @@
-const Card = require('../models/card'); //Экспорт модели карточки
+const Card = require('../models/card'); // Экспорт модели карточки
 const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('../utils/errors');
 const { STATUS_OK, STATUS_CREATED } = require('../utils/status');
 
@@ -11,9 +11,9 @@ const getCards = (req, res) => {
       .send({
         message: 'Internal server error',
         err: err.message,
-        stack: err.stack
+        stack: err.stack,
       }));
-}
+};
 
 // Создаёт карточку
 const createCard = (req, res) => {
@@ -27,7 +27,7 @@ const createCard = (req, res) => {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
@@ -39,7 +39,7 @@ const createCard = (req, res) => {
           });
       }
     });
-}
+};
 
 // Удаляет карточку по идентификатору
 const deleteCardById = (req, res) => {
@@ -49,10 +49,10 @@ const deleteCardById = (req, res) => {
         res
           .status(ERROR_NOT_FOUND)
           .send({
-            message: 'Card not found'
-          })
+            message: 'Card not found',
+          });
       } else {
-        res.status(STATUS_OK).send(card)
+        res.status(STATUS_OK).send(card);
       }
     })
     .catch((err) => {
@@ -60,7 +60,7 @@ const deleteCardById = (req, res) => {
         res
           .status(400)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
@@ -71,8 +71,8 @@ const deleteCardById = (req, res) => {
             stack: err.stack,
           });
       }
-    })
-}
+    });
+};
 
 // Поставить лайк карточке
 const addCardLike = (req, res) => {
@@ -86,10 +86,10 @@ const addCardLike = (req, res) => {
         res
           .status(ERROR_NOT_FOUND)
           .send({
-            message: 'Card not found'
-          })
+            message: 'Card not found',
+          });
       } else {
-        res.status(STATUS_OK).send(card)
+        res.status(STATUS_OK).send(card);
       }
     })
     .catch((err) => {
@@ -97,7 +97,7 @@ const addCardLike = (req, res) => {
         res
           .status(400)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
@@ -108,8 +108,8 @@ const addCardLike = (req, res) => {
             stack: err.stack,
           });
       }
-    })
-}
+    });
+};
 
 // Удалить лайк карточке
 const deleteCardLike = (req, res) => {
@@ -123,10 +123,10 @@ const deleteCardLike = (req, res) => {
         res
           .status(ERROR_NOT_FOUND)
           .send({
-            message: 'Card not found'
-          })
+            message: 'Card not found',
+          });
       } else {
-        res.status(STATUS_OK).send(card)
+        res.status(STATUS_OK).send(card);
       }
     })
     .catch((err) => {
@@ -134,7 +134,7 @@ const deleteCardLike = (req, res) => {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
-            message: 'Data is incorrect'
+            message: 'Data is incorrect',
           });
       } else {
         res
@@ -145,15 +145,13 @@ const deleteCardLike = (req, res) => {
             stack: err.stack,
           });
       }
-    })
-}
-
-
+    });
+};
 
 module.exports = {
   getCards,
   createCard,
   deleteCardById,
   addCardLike,
-  deleteCardLike
+  deleteCardLike,
 };
