@@ -80,7 +80,7 @@ const createUser = (req, res) => {
     // При успешном создании нового чего-то принято использовать статус 201
     .then((user) => res.status(STATUS_CREATED).send(user))
     .catch((err) => {
-      if (err.message.includes('Validation failed')) {
+      if (err.message.includes('validation failed')) {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
