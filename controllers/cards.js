@@ -95,7 +95,7 @@ const addCardLike = (req, res) => {
     .catch((err) => {
       if (err.message.includes('validation failed')) {
         res
-          .status(400)
+          .status(ERROR_BAD_REQUEST)
           .send({
             message: 'Data is incorrect',
           });
@@ -130,7 +130,7 @@ const deleteCardLike = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      if (err.message.includes('Validation failed')) {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
