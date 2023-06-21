@@ -9,7 +9,7 @@ const getUsers = async (req, res) => {
     const users = await User.find({}); // Будет ждать ответ, только потом перейдет дальше
     res.status(STATUS_OK).send(users);
   } catch (err) {
-    if (err.message.includes('validation failed')) {
+    if (err.name === 'ValidationError') {
       res
         .status(ERROR_BAD_REQUEST)
         .send({
@@ -71,8 +71,8 @@ const getUserById = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal server error',
-            err: err.message,
-            stack: err.stack,
+            // err: err.message,
+            // stack: err.stack,
           });
       }
     });
@@ -86,7 +86,7 @@ const createUser = (req, res) => {
     // При успешном создании нового чего-то принято использовать статус 201
     .then((user) => res.status(STATUS_CREATED).send(user))
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      if (err.name === 'ValidationError') {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
@@ -97,8 +97,6 @@ const createUser = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal Server Error',
-            err: err.message,
-            stack: err.stack,
           });
       }
     });
@@ -121,7 +119,7 @@ const updateProfile = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.message.includes('Validation failed')) {
+      if (err.name === 'ValidationError') {
         res
           .status(400)
           .send({
@@ -132,8 +130,6 @@ const updateProfile = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal Server Error',
-            err: err.message,
-            stack: err.stack,
           });
       }
     });
@@ -156,7 +152,7 @@ const updateAvatar = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.message.includes('Validation failed')) {
+      if (err.name === 'ValidationError') {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
@@ -167,8 +163,6 @@ const updateAvatar = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal Server Error',
-            err: err.message,
-            stack: err.stack,
           });
       }
     });

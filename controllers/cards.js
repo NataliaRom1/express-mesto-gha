@@ -6,12 +6,10 @@ const { STATUS_OK, STATUS_CREATED } = require('../utils/status');
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.status(STATUS_OK).send(cards))
-    .catch((err) => res
+    .catch(() => res
       .status(ERROR_INTERNAL_SERVER)
       .send({
         message: 'Internal server error',
-        err: err.message,
-        stack: err.stack,
       }));
 };
 
@@ -23,7 +21,7 @@ const createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then((card) => res.status(STATUS_CREATED).send(card))
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      if (err.name === 'ValidationError') {
         res
           .status(ERROR_BAD_REQUEST)
           .send({
@@ -34,8 +32,6 @@ const createCard = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal Server Error',
-            err: err.message,
-            stack: err.stack,
           });
       }
     });
@@ -64,8 +60,6 @@ const deleteCardById = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal Server Error',
-            err: err.message,
-            stack: err.stack,
           });
       }
     });
@@ -98,8 +92,6 @@ const addCardLike = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal Server Error',
-            err: err.message,
-            stack: err.stack,
           });
       }
     });
@@ -132,8 +124,6 @@ const deleteCardLike = (req, res) => {
           .status(ERROR_INTERNAL_SERVER)
           .send({
             message: 'Internal server error',
-            err: err.message,
-            stack: err.stack,
           });
       }
     });

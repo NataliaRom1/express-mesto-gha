@@ -14,3 +14,14 @@
 
 `npm run start` — запускает сервер   
 `npm run dev` — запускает сервер с hot-reload
+
+## **Ссылка на сайт**
+
+https://github.com/NataliaRom1/express-mesto-gha
+
+## **Автор**
+
+**_Наталья Романовская_**
+
+- Telegram: [@Natalia_Romanovskaia](https://t.me/Natalia_Romanovskaia)
+- GitHub: [@NataliaRom1](https://github.com/NataliaRom1)
