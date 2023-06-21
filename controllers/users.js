@@ -9,21 +9,11 @@ const getUsers = async (req, res) => {
     const users = await User.find({}); // Будет ждать ответ, только потом перейдет дальше
     res.status(STATUS_OK).send(users);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
-    } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal Server Error',
-          err: err.message,
-          stack: err.stack,
-        });
-    }
+    res
+      .status(ERROR_INTERNAL_SERVER)
+      .send({
+        message: 'Internal Server Error',
+      });
   }
 };
 
@@ -49,123 +39,124 @@ const getUsers = async (req, res) => {
 // }
 
 // Возвращает пользователя по _id
-const getUserById = (req, res) => {
-  User.findById(req.params.userId)
-    .orFail(() => new Error('Not found')) // Мы попадаем сюда, когда ничего не найдено
-    .then((user) => res.status(STATUS_OK).send(user))
-    .catch((err) => {
-      if (err.message === 'Not found') {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({
-            message: 'User not found',
-          });
-      } else if (err.name === 'CastError') {
-        res
-          .status(ERROR_BAD_REQUEST)
-          .send({
-            message: 'Data is incorrect',
-          });
-      } else {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({
-            message: 'Internal server error',
-            // err: err.message,
-            // stack: err.stack,
-          });
-      }
-    });
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId)
+      .orFail(() => new Error('Not found')); // Мы попадаем сюда, когда ничего не найдено
+    res.status(STATUS_OK).send(user);
+  } catch (err) {
+    if (err.message === 'Not found') {
+      res
+        .status(ERROR_NOT_FOUND)
+        .send({
+          message: 'User not found',
+        });
+    } else if (err.name === 'CastError') {
+      res
+        .status(ERROR_BAD_REQUEST)
+        .send({
+          message: 'Data is incorrect',
+        });
+    } else {
+      res
+        .status(ERROR_INTERNAL_SERVER)
+        .send({
+          message: 'Internal server Error',
+        });
+    }
+  }
 };
 
 // Создаёт пользователя
-const createUser = (req, res) => {
+const createUser = async (req, res) => {
   const { name, about, avatar } = req.body;
-
-  User.create({ name, about, avatar })
+  try {
+    const user = await User.create({ name, about, avatar });
     // При успешном создании нового чего-то принято использовать статус 201
-    .then((user) => res.status(STATUS_CREATED).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_BAD_REQUEST)
-          .send({
-            message: 'Data is incorrect',
-          });
-      } else {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({
-            message: 'Internal Server Error',
-          });
-      }
-    });
+    res.status(STATUS_CREATED).send(user);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      res
+        .status(ERROR_BAD_REQUEST)
+        .send({
+          message: 'Data is incorrect',
+        });
+    } else {
+      res
+        .status(ERROR_INTERNAL_SERVER)
+        .send({
+          message: 'Internal Server Error',
+        });
+    }
+  }
 };
 
 // Обновляет профиль
-const updateProfile = (req, res) => {
+const updateProfile = async (req, res) => {
   const { name, about } = req.body;
-
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .then((user) => {
-      if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({
-            message: 'User not found',
-          });
-      } else {
-        res.status(STATUS_OK).send(user);
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res
-          .status(400)
-          .send({
-            message: 'Data is incorrect',
-          });
-      } else {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({
-            message: 'Internal Server Error',
-          });
-      }
-    });
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, about },
+      { new: true, runValidators: true },
+    )
+      .orFail(() => new Error('Not found'));
+    res.status(STATUS_OK).send(user);
+  } catch (err) {
+    if (err.message === 'Not found') {
+      res
+        .status(ERROR_NOT_FOUND)
+        .send({
+          message: 'User not found',
+        });
+    } else if (err.name === 'CastError') {
+      res
+        .status(ERROR_BAD_REQUEST)
+        .send({
+          message: 'Data is incorrect',
+        });
+    } else {
+      res
+        .status(ERROR_INTERNAL_SERVER)
+        .send({
+          message: 'Internal Server Error',
+        });
+    }
+  }
 };
 
 // Обновляет аватар
-const updateAvatar = (req, res) => {
+const updateAvatar = async (req, res) => {
   const { avatar } = req.body;
-
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .then((user) => {
-      if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({
-            message: 'User not found',
-          });
-      } else {
-        res.status(STATUS_OK).send(user);
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_BAD_REQUEST)
-          .send({
-            message: 'Data is incorrect',
-          });
-      } else {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({
-            message: 'Internal Server Error',
-          });
-      }
-    });
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { avatar },
+      { new: true, runValidators: true },
+    )
+      .orFail(() => new Error('Not found'));
+    res.status(STATUS_OK).send(user);
+  } catch (err) {
+    if (err.message === 'Not found') {
+      res
+        .status(ERROR_NOT_FOUND)
+        .send({
+          message: 'User not found',
+        });
+    } else if (err.name === 'CastError') {
+      res
+        .status(ERROR_BAD_REQUEST)
+        .send({
+          message: 'Data is incorrect',
+        });
+    } else {
+      res
+        .status(ERROR_INTERNAL_SERVER)
+        .send({
+          message: 'Internal Server Error',
+        });
+    }
+  }
 };
 
 module.exports = {
