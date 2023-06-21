@@ -109,7 +109,7 @@ const updateProfile = async (req, res) => {
         .send({
           message: 'User not found',
         });
-    } else if (err.name === 'CastError') {
+    } else if (err.name === 'ValidationError') {
       res
         .status(ERROR_BAD_REQUEST)
         .send({

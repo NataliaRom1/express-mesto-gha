@@ -24,7 +24,7 @@ const createCard = async (req, res) => {
     const card = await Card.create({ name, link, owner });
     res.status(STATUS_CREATED).send(card);
   } catch (err) {
-    if (err.name === 'CastError') {
+    if (err.name === 'ValidationError') {
       res
         .status(ERROR_BAD_REQUEST)
         .send({
