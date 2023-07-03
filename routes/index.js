@@ -7,17 +7,15 @@ const auth = require('../midlwares/auth');
 const NotFoundError = require('../midlwares/errors/NotFoundError');
 const urlPattern = require('../utils/constants');
 
-router.post('/signup',
-//   celebrate({
-//   body: Joi.object().keys({
-//     name: Joi.string().min(2).max(30),
-//     about: Joi.string().min(3).max(30),
-//     avatar: Joi.string().pattern(urlPattern),
-//     email: Joi.string().required().email(),
-//     password: Joi.string().required(),
-//   }),
-// }),
-  createUser); // Регистрация пользователя
+router.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(3).max(30),
+    avatar: Joi.string().pattern(urlPattern),
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), createUser); // Регистрация пользователя
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({
