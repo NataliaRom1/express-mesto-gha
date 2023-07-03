@@ -96,7 +96,7 @@ const createUser = async (req, res, next) => {
     // При успешном создании нового чего-то принято использовать статус 201
     res.status(STATUS_CREATED).send({ data: user });
   } catch (err) {
-    if (err.name === 'CastError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Data is incorrect'));
     } else if (err.code === 11000) {
       next(new ConflictError('User with this email already exists'));
