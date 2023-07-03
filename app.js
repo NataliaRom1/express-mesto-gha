@@ -20,8 +20,8 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use(router);
-app.use(errorHandler);
 app.use(errors());
+app.use(errorHandler);
 
 // Слушаю порт 3000 и передаю колбек, котрый он вызовет в момент, когда начнет слушать.
 app.listen(PORT, () => {
