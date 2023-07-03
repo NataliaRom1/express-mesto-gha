@@ -122,7 +122,7 @@ const login = async (req, res, next) => {
       // Создать JWT
       const jwt = jsonWebToken.sign({
         _id: user._id,
-      // }, process.env['JWT_SECRET']); // Второй параметр - "секрет", который делает наш токен уникальным
+      // }, process.env['JWT_SECRET']);
       }, 'SECRET'); // Второй параметр - "секрет", который делает наш токен уникальным
       // Прикрепить jwt к куке
       res.cookie('jwt', jwt, {
