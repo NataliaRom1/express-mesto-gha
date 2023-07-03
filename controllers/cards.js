@@ -1,76 +1,60 @@
 const Card = require('../models/card'); // Экспорт модели карточки
-const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('../utils/errors');
 const { STATUS_OK, STATUS_CREATED } = require('../utils/status');
+const NotFoundError = require('../midlwares/errors/NotFoundError');
+const BadRequestError = require('../midlwares/errors/BadRequestError');
+const ForbiddenError = require('../midlwares/errors/ForbiddenError');
 
 // Возвращает все карточки
-const getCards = async (req, res) => {
+const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
     res.status(STATUS_OK).send(cards);
   } catch (err) {
-    res
-      .status(ERROR_INTERNAL_SERVER)
-      .send({
-        message: 'Internal server error',
-      });
+    next(err);
   }
 };
 
 // Создаёт карточку
-const createCard = async (req, res) => {
+const createCard = async (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
+
   try {
     const card = await Card.create({ name, link, owner });
     res.status(STATUS_CREATED).send(card);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+      next(new BadRequestError('Data is incorrect'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal Server Error',
-        });
+      next(err);
     }
   }
 };
 
 // Удаляет карточку по идентификатору
-const deleteCardById = async (req, res) => {
+const deleteCardById = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.cardId)
       .orFail(() => new Error('Not found'));
+
+    if (card.owner.toString() !== req.user._id) {
+      throw new ForbiddenError('You do not have access rights');
+    }
+
     res.status(STATUS_OK).send(card);
   } catch (err) {
     if (err.message === 'Not found') {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({
-          message: 'Card not found',
-        });
+      next(new NotFoundError('Card not found'));
     } else if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+      next(new BadRequestError('Data is incorrect'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal Server Error',
-        });
+      next(err);
     }
   }
 };
 
 // Поставить лайк карточке
-const addCardLike = async (req, res) => {
+const addCardLike = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -81,29 +65,17 @@ const addCardLike = async (req, res) => {
     res.status(STATUS_OK).send(card);
   } catch (err) {
     if (err.message === 'Not found') {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({
-          message: 'Card not found',
-        });
+      next(new NotFoundError('Card not found'));
     } else if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+      next(new BadRequestError('Data is incorrect'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal Server Error',
-        });
+      next(err);
     }
   }
 };
 
 // Удалить лайк карточке
-const deleteCardLike = async (req, res) => {
+const deleteCardLike = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -114,23 +86,11 @@ const deleteCardLike = async (req, res) => {
     res.status(STATUS_OK).send(card);
   } catch (err) {
     if (err.message === 'Not found') {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({
-          message: 'Card not found',
-        });
+      next(new NotFoundError('Card not found'));
     } else if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+      next(new BadRequestError('Data is incorrect'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal server error',
-        });
+      next(err);
     }
   }
 };

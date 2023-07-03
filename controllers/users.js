@@ -1,19 +1,36 @@
+const bcrypt = require('bcryptjs'); // Библиотека для хэширования
+const jsonWebToken = require('jsonwebtoken'); // Библиотека для создания токена
 const User = require('../models/user'); // Экспорт модели юзера
-const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('../utils/errors');
 const { STATUS_OK, STATUS_CREATED } = require('../utils/status');
+const NotFoundError = require('../midlwares/errors/NotFoundError');
+const BadRequestError = require('../midlwares/errors/BadRequestError');
+const ConflictError = require('../midlwares/errors/ConflictError');
+const UnauthorizedError = require('../midlwares/errors/UnauthorizedError');
+const ForbiddenError = require('../midlwares/errors/ForbiddenError');
 
 // Возвращает всех пользователей
-const getUsers = async (req, res) => {
+const getUsers = async (req, res, next) => {
   // Пытается сделать try, если не получилось - проваливается в catch
   try {
     const users = await User.find({}); // Будет ждать ответ, только потом перейдет дальше
-    res.status(STATUS_OK).send(users);
+    res.status(STATUS_OK).send({ data: users });
   } catch (err) {
-    res
-      .status(ERROR_INTERNAL_SERVER)
-      .send({
-        message: 'Internal Server Error',
-      });
+    next(err);
+  }
+};
+
+// Возвращает информацию о текущем пользователе
+const getUserInfo = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .orFail(() => new Error('User not found')); // Мы попадаем сюда, когда ничего не найдено
+    res.status(STATUS_OK).send({ data: user });
+  } catch (err) {
+    if (err.message === 'User not found') {
+      next(new NotFoundError('User not found'));
+    } else {
+      next(err);
+    }
   }
 };
 
@@ -39,61 +56,99 @@ const getUsers = async (req, res) => {
 // }
 
 // Возвращает пользователя по _id
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)
-      .orFail(() => new Error('Not found')); // Мы попадаем сюда, когда ничего не найдено
-    res.status(STATUS_OK).send(user);
+      .orFail(() => new Error('User not found')); // Мы попадаем сюда, когда ничего не найдено
+    res.status(STATUS_OK).send({ data: user });
   } catch (err) {
-    if (err.message === 'Not found') {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({
-          message: 'User not found',
-        });
+    if (err.message === 'User not found') {
+      next(new NotFoundError('User not found'));
     } else if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+      next(new BadRequestError('Data is incorrect'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal server Error',
-        });
+      next(err);
     }
   }
 };
 
-// Создаёт пользователя
-const createUser = async (req, res) => {
-  const { name, about, avatar } = req.body;
+// Создаёт пользователя 14 спринт
+const createUser = async (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+
   try {
-    const user = await User.create({ name, about, avatar });
+    // Соль - уникальное значение для нашего ресурса
+    const hashedPassword = await bcrypt.hash(String(password), 10);
+    const user = await User
+      .create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hashedPassword,
+      });
     // При успешном создании нового чего-то принято использовать статус 201
-    res.status(STATUS_CREATED).send(user);
+    res.status(STATUS_CREATED).send({ data: user });
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+    if (err.name === 'CastError') {
+      next(new BadRequestError('Data is incorrect'));
+    } else if (err.code === 11000) {
+      next(new ConflictError('User with this email already exists'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal Server Error',
-        });
+      next(err);
+    }
+  }
+};
+
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    next(new ForbiddenError('Enter the data'));
+  }
+
+  try {
+    const user = await User.findOne({ email }) // Проверяем, существует ли юзер с таким емейлом
+      .select('+password') // Добавили поле пароль, т.к. оно скрыто
+      .orFail(() => new Error('User not found')); // Мы попадаем сюда, когда пользователь не найден - возвращаем ошибку
+    const isValidUser = await bcrypt.compare(String(password), user.password);
+    if (isValidUser) {
+      // Создать JWT
+      const jwt = jsonWebToken.sign({
+        _id: user._id,
+      }, process.env['JWT_SECRET']); // Второй параметр - "секрет", который делает наш токен уникальным
+      // Прикрепить jwt к куке
+      res.cookie('jwt', jwt, {
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+        httpOnly: true, // Кука доступна только в рамках http запроса(нельзя получить доступ ч/з js)
+        sameSite: true, // Позволяет отправлять куки только в рамках одного домена
+        secure: true, // Чтобы кука уходила только по https соединению
+      });
+      res.status(STATUS_OK).send({ data: user.toJSON() });
+    } else {
+      next(new UnauthorizedError('Incorrect password'));
+    }
+  } catch (err) {
+    if (err.message === 'User not found') {
+      next(new NotFoundError('User not found'));
+    } else if (err.name === 'CastError') {
+      next(new BadRequestError('Data is incorrect'));
+    } else {
+      next(err);
     }
   }
 };
 
 // Обновляет профиль
-const updateProfile = async (req, res) => {
+const updateProfile = async (req, res, next) => {
   const { name, about } = req.body;
+
   try {
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -103,58 +158,35 @@ const updateProfile = async (req, res) => {
       .orFail(() => new Error('Not found'));
     res.status(STATUS_OK).send(user);
   } catch (err) {
-    if (err.message === 'Not found') {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({
-          message: 'User not found',
-        });
+    if (err.message === 'User not found') {
+      next(new NotFoundError('User not found'));
     } else if (err.name === 'ValidationError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+      next(new BadRequestError('Data is incorrect'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal Server Error',
-        });
+      next(err);
     }
   }
 };
 
 // Обновляет аватар
-const updateAvatar = async (req, res) => {
+const updateAvatar = async (req, res, next) => {
   const { avatar } = req.body;
+
   try {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { avatar },
       { new: true, runValidators: true },
     )
-      .orFail(() => new Error('Not found'));
+      .orFail(() => new Error('User not found'));
     res.status(STATUS_OK).send(user);
   } catch (err) {
-    if (err.message === 'Not found') {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({
-          message: 'User not found',
-        });
+    if (err.message === 'User not found') {
+      next(new NotFoundError('User not found'));
     } else if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({
-          message: 'Data is incorrect',
-        });
+      next(new BadRequestError('Data is incorrect'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({
-          message: 'Internal Server Error',
-        });
+      next(err);
     }
   }
 };
@@ -163,6 +195,8 @@ module.exports = {
   getUsers,
   getUserById,
   createUser,
+  login,
   updateProfile,
   updateAvatar,
+  getUserInfo,
 };

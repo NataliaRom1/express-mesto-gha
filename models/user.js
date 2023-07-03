@@ -1,24 +1,48 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
   name: { // Опишем требования к имя пользователя в схеме:
     type: String, // имя — это строка
-    required: true, // оно должно быть у каждого пользователя, так что имя — обязательное поле
+    default: 'Жак',
     minlength: 2, // минимальная длина имени — 2 символа
     maxlength: 30, // а максимальная — 30 символов
   },
 
   about: {
     type: String,
-    required: true,
+    default: 'Исследователь',
     minlength: 3,
     maxlength: 30,
   },
 
   avatar: {
     type: String, // Ссылка на аватарку
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+  },
+
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    validate: {
+      validator: (email) => validator.isEmail(email),
+      message: 'Invalid email',
+    },
+  },
+
+  password: {
+    type: String,
+    select: false, // Убираем пароль из вывода
     required: true,
   },
 });
+
+userSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+
+  return user;
+};
 
 module.exports = mongoose.model('user', userSchema);
