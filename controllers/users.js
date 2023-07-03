@@ -132,11 +132,11 @@ const login = async (req, res, next) => {
       });
       res.status(STATUS_OK).send({ data: user.toJSON() });
     } else {
-      next(new UnauthorizedError('Incorrect password'));
+      next(new UnauthorizedError('Incorrect password or email'));
     }
   } catch (err) {
     if (err.message === 'User not found') {
-      next(new NotFoundError('User not found'));
+      next(new UnauthorizedError('Incorrect password or email'));
     } else if (err.name === 'CastError') {
       next(new BadRequestError('Data is incorrect'));
     } else {
