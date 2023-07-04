@@ -34,14 +34,16 @@ const createCard = async (req, res, next) => {
 // Удаляет карточку по идентификатору
 const deleteCardById = async (req, res, next) => {
   try {
-    const card = await Card.findByIdAndDelete(req.params.cardId)
+    const card = await Card.findById(req.params.cardId)
       .orFail(() => new Error('Not found'));
 
     if (card.owner.toString() !== req.user._id) {
       throw new ForbiddenError('You do not have access rights');
     }
 
-    res.status(STATUS_OK).send(card);
+    await Card.deleteOne(card);
+
+    res.status(STATUS_OK).send({ data: card });
   } catch (err) {
     if (err.message === 'Not found') {
       next(new NotFoundError('Card not found'));

@@ -15,7 +15,7 @@ const auth = (req, res, next) => {
     // payload = jwt.verify(token, process.env['JWT_SECRET']);
     payload = jwt.verify(token, 'SECRET');
   } catch (err) {
-    return next(err);
+    return next(new UnauthorizedError('Need authentication'));
   }
 
   req.user = payload;
