@@ -106,8 +106,8 @@ const login = async (req, res, next) => {
         // Создать JWT
         const jwt = jsonWebToken.sign({
           _id: user._id,
-          // }, process.env['JWT_SECRET']);
-        }, 'SECRET'); // Второй параметр - "секрет", который делает наш токен уникальным
+        }, process.env['JWT_SECRET']);
+        // }, 'SECRET'); // Второй параметр - "секрет", который делает наш токен уникальным
         // Прикрепить jwt к куке
         res.cookie('jwt', jwt, {
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
@@ -118,10 +118,10 @@ const login = async (req, res, next) => {
         });
         res.status(STATUS_OK).send({ data: user.toJSON() });
       } else {
-        next(new UnauthorizedError('Incorrect password or email'));
+        throw new UnauthorizedError('Incorrect password or email');
       }
     }
-    throw new NotFoundError('User not found');
+    throw new UnauthorizedError('Incorrect password or email');
   } catch (err) {
     if (err.name === 'ValidationError') {
       next(new BadRequestError('Data is incorrect'));
