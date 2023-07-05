@@ -23,7 +23,7 @@ const createCard = async (req, res, next) => {
     const card = await Card.create({ name, link, owner });
     res.status(STATUS_CREATED).send(card);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err instanceof ValidationError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -61,12 +61,14 @@ const addCardLike = async (req, res, next) => {
       { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
       { new: true },
     )
-      .orFail(new Error('Not found'));
-    res.status(STATUS_OK).send(card);
+
+    if (card) {
+      res.status(STATUS_OK).send(card);
+    }
+    throw new NotFoundError('Card not found');
+
   } catch (err) {
-    if (err.message === 'Not found') {
-      next(new NotFoundError('Card not found'));
-    } else if (err.name === 'CastError') {
+    if (err.name === 'CastError') {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -82,12 +84,14 @@ const deleteCardLike = async (req, res, next) => {
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
     )
-      .orFail(new Error('Not found'));
-    res.status(STATUS_OK).send(card);
+
+    if (card) {
+      res.status(STATUS_OK).send(card);
+    }
+    throw new NotFoundError('Card not found');
+
   } catch (err) {
-    if (err.message === 'Not found') {
-      next(new NotFoundError('Card not found'));
-    } else if (err.name === 'CastError') {
+    if (err.name === 'CastError') {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);

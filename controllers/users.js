@@ -84,7 +84,7 @@ const createUser = async (req, res, next) => {
     // При успешном создании нового чего-то принято использовать статус 201
     res.status(STATUS_CREATED).send({ data: user });
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err instanceof ValidationError) {
       next(new BadRequestError('Data is incorrect'));
     } else if (err.code === 11000) {
       next(new ConflictError('User with this email already exists'));
@@ -106,8 +106,7 @@ const login = async (req, res, next) => {
         // Создать JWT
         const jwt = jsonWebToken.sign({
           _id: user._id,
-        }, process.env['JWT_SECRET']);
-        // }, 'SECRET'); // Второй параметр - "секрет", который делает наш токен уникальным
+        }, process.env['JWT_SECRET']); // Второй параметр - "секрет", который делает наш токен уникальным
         // Прикрепить jwt к куке
         res.cookie('jwt', jwt, {
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
@@ -123,7 +122,7 @@ const login = async (req, res, next) => {
     }
     throw new UnauthorizedError('Incorrect password or email');
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err instanceof ValidationError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -136,7 +135,7 @@ const updateProfile = async (req, res, next) => {
   const { name, about } = req.body;
 
   try {
-    const user = await User.findByIdAndUpdate(
+    const user = await User.updateOne(
       req.user._id,
       { name, about },
       { new: true, runValidators: true },
@@ -146,7 +145,7 @@ const updateProfile = async (req, res, next) => {
     }
     throw new NotFoundError('User not found');
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err instanceof ValidationError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -171,7 +170,7 @@ const updateAvatar = async (req, res, next) => {
 
     throw new NotFoundError('User not found');
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err instanceof ValidationError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
