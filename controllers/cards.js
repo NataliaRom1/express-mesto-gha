@@ -23,7 +23,7 @@ const createCard = async (req, res, next) => {
     const card = await Card.create({ name, link, owner });
     res.status(STATUS_CREATED).send(card);
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof BadRequestError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -60,13 +60,12 @@ const addCardLike = async (req, res, next) => {
       req.params.cardId,
       { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
       { new: true },
-    )
+    );
 
     if (card) {
       res.status(STATUS_OK).send(card);
     }
     throw new NotFoundError('Card not found');
-
   } catch (err) {
     if (err.name === 'CastError') {
       next(new BadRequestError('Data is incorrect'));
@@ -83,13 +82,12 @@ const deleteCardLike = async (req, res, next) => {
       req.params.cardId,
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
-    )
+    );
 
     if (card) {
       res.status(STATUS_OK).send(card);
     }
     throw new NotFoundError('Card not found');
-
   } catch (err) {
     if (err.name === 'CastError') {
       next(new BadRequestError('Data is incorrect'));

@@ -84,7 +84,7 @@ const createUser = async (req, res, next) => {
     // При успешном создании нового чего-то принято использовать статус 201
     res.status(STATUS_CREATED).send({ data: user });
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof BadRequestError) {
       next(new BadRequestError('Data is incorrect'));
     } else if (err.code === 11000) {
       next(new ConflictError('User with this email already exists'));
@@ -122,7 +122,7 @@ const login = async (req, res, next) => {
     }
     throw new UnauthorizedError('Incorrect password or email');
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof BadRequestError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -145,7 +145,7 @@ const updateProfile = async (req, res, next) => {
     }
     throw new NotFoundError('User not found');
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof BadRequestError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -170,7 +170,7 @@ const updateAvatar = async (req, res, next) => {
 
     throw new NotFoundError('User not found');
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof BadRequestError) {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
