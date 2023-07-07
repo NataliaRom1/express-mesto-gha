@@ -23,7 +23,7 @@ const createCard = async (req, res, next) => {
     const card = await Card.create({ name, link, owner });
     res.status(STATUS_CREATED).send(card);
   } catch (err) {
-    if (err instanceof BadRequestError) {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Data is incorrect'));
     } else {
       next(err);
@@ -64,8 +64,9 @@ const addCardLike = async (req, res, next) => {
 
     if (card) {
       res.status(STATUS_OK).send(card);
+    } else {
+      throw new NotFoundError('Card not found');
     }
-    throw new NotFoundError('Card not found');
   } catch (err) {
     if (err.name === 'CastError') {
       next(new BadRequestError('Data is incorrect'));
@@ -86,8 +87,9 @@ const deleteCardLike = async (req, res, next) => {
 
     if (card) {
       res.status(STATUS_OK).send(card);
+    } else {
+      throw new NotFoundError('Card not found');
     }
-    throw new NotFoundError('Card not found');
   } catch (err) {
     if (err.name === 'CastError') {
       next(new BadRequestError('Data is incorrect'));
